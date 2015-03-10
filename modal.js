@@ -14,9 +14,9 @@
 		header: null,
 		footer: null,
 		containerClass: 'modal-container',
-		headerClass: 'modal-header',
-		footerClass: 'modal-footer',
-		contentClass: 'modal-content',
+		headerClass: 'header',
+		footerClass: 'footer',
+		contentClass: 'content',
 		hideButtonClass: '.hide',
 		overlayClose: false,
 		overlayOpacity: 0.2,
@@ -68,9 +68,9 @@
 	isCssAnimating = false,
 	spinnerTimer = null,
 	autoHideTimer = null,
-	//animationCallback = {},
 	xhr = {},
 	cache = {},
+	queued = [''],
 
 	$body = $('body').addClass(prefix + (isOld ? ' ' + prefix + '-olds' : '')),
 	$current,
@@ -204,55 +204,56 @@
 			}
 		}),
 
-	$spinner = $('<div class="animated ' + prefix + '-sp"/>').appendTo($body).on({
-		show: function(event, callback) {
-			var self = this;
-			if (self.showed) {
-				return false;
-			}
-			self.showed = true;
-			$body.addClass(prefix + '-loading');
+	$spinner = $('<div class="animated ' + prefix + '-sp"/>').appendTo($body)
+		.on({
+			show: function(event, callback) {
+				var self = this;
+				if (self.showed) {
+					return false;
+				}
+				self.showed = true;
+				$body.addClass(prefix + '-loading');
 
-			var count = 1, text, step = [0,1,2,6,10,9,8,4], on = '&#9632;', off = '&#9633;',
-			spin = function() {
-				text = [on,on,on,'<br>',on,off,on,'<br>',on,on,on];
-				text[step[count]] = off;
-				self.innerHTML = text.join('');
-				count = (count == 7) ? 0 : count +1;
-			};
-			spin();
-			self.timer = setInterval(spin, 100);
+				var count = 1, text, step = [0,1,2,6,10,9,8,4], on = '&#9632;', off = '&#9633;',
+				spin = function() {
+					text = [on,on,on,'<br>',on,off,on,'<br>',on,on,on];
+					text[step[count]] = off;
+					self.innerHTML = text.join('');
+					count = (count == 7) ? 0 : count +1;
+				};
+				spin();
+				self.timer = setInterval(spin, 100);
 
-			if (animationListener) {
-				$(self).addClass(defaults.acSpinShow);
-			} else {
-				$(self).stop().fadeTo('fast', 1);
-			}
-		},
-		hide: function(event, callback) {
-			var self = this;
-			if (!self.showed) {
-				return false;
-			}
+				if (animationListener) {
+					$(self).addClass(defaults.acSpinShow);
+				} else {
+					$(self).stop().fadeTo('fast', 1);
+				}
+			},
+			hide: function(event, callback) {
+				var self = this;
+				if (!self.showed) {
+					return false;
+				}
 
-			if (self.timer) {
-				clearInterval(self.timer);
-				self.timer = null;
-			}
+				if (self.timer) {
+					clearInterval(self.timer);
+					self.timer = null;
+				}
 
-			var func = function() {
-				this.showed = false;
-				$body.removeClass(prefix + '-loading');
-				$(this).removeClass(defaults.acSpinHide);
-			};
-			if (animationListener) {
-				self[pluginName] = func;
-				$(self).removeClass(defaults.acSpinShow).addClass(defaults.acSpinHide);
-			} else {
-				$(self).stop().fadeTo('fast', 0, func);
+				var func = function() {
+					this.showed = false;
+					$body.removeClass(prefix + '-loading');
+					$(this).removeClass(defaults.acSpinHide);
+				};
+				if (animationListener) {
+					self[pluginName] = func;
+					$(self).removeClass(defaults.acSpinShow).addClass(defaults.acSpinHide);
+				} else {
+					$(self).stop().fadeTo('fast', 0, func);
+				}
 			}
-		}
-	});
+		});
 
 	if (animationListener) {
 		var animationEvent = function(event){
@@ -276,24 +277,34 @@
 
 	function attach(element, option)
 	{
-		if (!element.data || !element.data(pluginName + 'On')) {
+		if (!element.data || !element.data(pluginName + 'Num')) {
+			var number = queued.length;
 			option = $.extend({}, defaults, option);
-			var wrapper = $('<div class="' + prefix + '-container ' + option.containerClass + '"/>');
 
 			var content = $('<div class="' + prefix + '-content ' + option.contentClass + '"/>');
 			if ('string' === typeof element) {
-				content.html(element);
-				content.data(pluginName + 'On', true);
-			} else {
-				if (element.data) {
-					option = $.extend({}, option, element.data());
+				if ('<' === element[0] && '>' === element.substr(-1)) {
+					element = $(element);
+					if (element.is('img')) {
+						content.addClass('image-only');
+					}
+					content.append($(element));
+				} else {
+					content.html(element);
 				}
-				element.data(pluginName + 'On', true);
+				content.data(pluginName + 'Num', number);
+			} else {
+				if (element instanceof $) {
+					option = $.extend({}, option, element.data());
+					element.show().data(pluginName + 'Num', number);
+				}
 				content.append(element);
 			}
+
+			var wrapper = $('<div class="' + prefix + '-container ' + option.containerClass + '"/>');
 			
 			if (option.header) {
-				var header = $('<div class="' + option.headerClass + '"/>');
+				var header = $('<div class="' + prefix + '-header ' + option.headerClass + '"/>');
 				if ('string' === typeof option.header) {
 					header.html(option.header);
 				} else {
@@ -305,7 +316,7 @@
 			wrapper.append(content);
 
 			if (option.footer) {
-				var footer = $('<div class="' + option.footerClass + '"/>');
+				var footer = $('<div class="' + prefix + '-footer ' + option.footerClass + '"/>');
 				if ('string' === typeof option.footer) {
 					footer.html(option.footer);
 				} else {
@@ -314,12 +325,15 @@
 				wrapper.append(footer);
 			}
 
-			element = wrapper.appendTo($queue).data({option: option, content: content});
+			wrapper.find('a[href="#close"]').on('click.' + pluginName, function(event) {
+				event.preventDefault();
+				$stage.trigger('hide');
+			});
 
 			wrapper.find('form').on('submit.' + pluginName, function() {
 				var self = $(this),
 				href = self.prop('action'),
-				method = self.prop('method') || 'get',
+				method = (self.prop('method') || 'get').toLowerCase(),
 				data = self.serialize();
 
 				if (href && data) {
@@ -331,26 +345,33 @@
 					ajax(href, option, function(modal){
 						$spinner.trigger('hide');
 						$stage.trigger('show', modal);
-					}, data);
+					}, data, method);
 
 					return false;
 				}
 			});
 
-			if (currentSelector) {
-				wrapper.find(currentSelector)[pluginName]();
+			if (option.selector) {
+				wrapper.find(option.selector)[pluginName]();
 			}
+
+			element = wrapper.appendTo($queue).data({option: option, content: content});
+			
+
+			queued.push(element);
+		} else {
+			element = queued[element.data(pluginName + 'Num')];
 		}
 
 		return element;
 	}
 
-	function ajax(url, option, callback, postData){
+	function ajax(url, option, callback, data, method){
 		if (cache[url] && 'function' === typeof callback) {
 			$spinner.trigger('hide');
 			callback(cache[url]);
 		} else {
-			if (!option || (option && !option.preload) || xhr[url] || postData) {
+			if (!option || (option && !option.preload) || xhr[url] || data) {
 				$spinner.trigger('show');
 			}
 			
@@ -394,10 +415,10 @@
 				if (xhr[url]) {
 					xhr[url].success(success);
 				} else {
-					if (postData) {
-						xhr[url] = $.post(url, postData, success);
+					if (method && 'post' === method) {
+						xhr[url] = $.post(url + '?' + (new Date()).getTime(), data, success);
 					} else {
-						xhr[url] = $.get(url, success);
+						xhr[url] = $.get(url + '?' + (new Date()).getTime(), success);
 					}
 				}
 			}
@@ -407,7 +428,7 @@
 	}
 
 	function runEvent(name, data) {
-		if (data.option[name] && 'function' === typeof data.option[name]) {
+		if (data.option && data.option[name] && 'function' === typeof data.option[name]) {
 			data.option[name].apply(this, [data.content, data.option]);
 		}
 	}
@@ -431,14 +452,13 @@
 	}
 
 	$.fn[pluginName] = function(option) {
-		var self, modal, id, href;
-		currentSelector = this.selector;
+		var self, modal, id, href, selector = this.selector;
 
 		return this.each(function() {
-			self = $(this);
+			self = $(this).data('selector', selector);
 			option = $.extend({}, defaults, option, self.data());
 
-			if (!self.data('modal')) {
+			if (!self.data(pluginName)) {
 				// 対象がインライン要素の場合
 				id = option.target || self.attr('href');
 				if ('#' === id[0] || '.' === id[0]) {
@@ -462,11 +482,15 @@
 
 					self.on('click.' + pluginName, function(event) {
 						event.preventDefault();
+						$(this).data('modal', modal);
 						ajax(this.href, option, function(modal){
 							$stage.trigger('show', modal);
 						});
+						return false;
 					});
 				}
+
+				self.data(pluginName, true);
 			}
 		});
 	};
@@ -477,7 +501,7 @@
 		}
 	};
 
-	$[pluginName].setting = function (option, value) {
+	$[pluginName].settings = function (option, value) {
 		if ('object' === typeof option) {
 			defaults = $.extend(defaults, option);
 		} else if ('string' === typeof option && undefined !== value) {

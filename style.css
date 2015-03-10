@@ -1,24 +1,6 @@
 html {
   height: 100%;
 }
-body.-modaled > .-modaled-stgwrap {
-  width: 100%;
-  height: 100%;
-  display: none;
-  position: fixed;
-  border: 0;
-  top: 0;
-  left: 0;
-  z-index: 101;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-body.-modaled > .-modaled-stgwrap > div {
-  display: table-cell;
-  padding: 10px;
-  text-align: center;
-  vertical-align: middle;
-}
 body.-modaled > .-modaled-que {
   width: 0;
   height: 0;
@@ -73,21 +55,41 @@ body.-modaled > .-modaled-sp {
   -ms-animation-duration: .3s;
   animation-duration: .3s;
 }
+body.-modaled > .-modaled-stgwrap {
+  width: 100%;
+  height: 100%;
+  display: none;
+  position: fixed;
+  border: 0;
+  top: 0;
+  left: 0;
+  z-index: 101;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+body.-modaled > .-modaled-stgwrap > div {
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+}
+body.-modaled .-modaled-stage,
+body.-modaled .-modaled-container {
+  max-width: 88vw;
+  max-height: 85vh;
+}
 body.-modaled .-modaled-stage {
-  max-width: 98vw;
-  max-height: 98vh;
   display: inline-block;
   -webkit-opacity: 0;
   -moz-opacity: 0;
   -ms-opacity: 0;
   opacity: 0;
   filter: "alpha(opacity=0)";
-  -webkit-animation-duration: .5s;
-  -moz-animation-duration: .5s;
-  -ms-animation-duration: .5s;
-  animation-duration: .5s;
+  -webkit-animation-duration: .8s;
+  -moz-animation-duration: .8s;
+  -ms-animation-duration: .8s;
+  animation-duration: .8s;
   position: relative;
-  text-align: left;
+  vertical-align: bottom;
 }
 body.-modaled .-modaled-stage.wobble,
 body.-modaled .-modaled-stage.shake {
@@ -96,16 +98,29 @@ body.-modaled .-modaled-stage.shake {
   -ms-animation-duration: .6s;
   animation-duration: .6s;
 }
-body.-modaled .-modaled-stage .-modaled-content {
-  max-width: 95vw;
-  max-height: 95vh;
+body.-modaled .-modaled-container {
+  display: block;
+  text-align: left;
+  -webkit-overflow-scrolling: touch;
+}
+body.-modaled .-modaled-header,
+body.-modaled .-modaled-footer {
+  position: relative;
+  z-index: 2;
+}
+body.-modaled .-modaled-content {
+  position: relative;
+  z-index: 1;
+  max-width: inherit;
+  max-height: inherit;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
-body.-modaled .-modaled-stage .-modaled-image {
+body.-modaled .image-only img {
   max-width: 80vw;
   max-height: 80vh;
   margin: 0 auto;
+  vertical-align: top;
 }
 body.-modaled.-modaled-fast .-modaled-stage {
   -webkit-animation-duration: .3s;
@@ -169,15 +184,18 @@ body.-modaled.-modaled-loading .-modaled-sp {
   top: 50%;
   left: 50%;
 }
-body.-modaled.-modaled-olds .-modaled-stage {
-  max-width: 95%;
-  max-height: 95%;
+body.-modaled.-modaled-olds.-modaled-open .-modaled-stgwrap > div {
+  position: absolute;
+  width: 100%;
+  height: 98%;
+  padding: 15px;
 }
-body.-modaled.-modaled-olds .-modaled-stage .-modaled-content {
+body.-modaled.-modaled-olds.-modaled-open .-modaled-stage {
   max-width: 100%;
   max-height: 100%;
+  overflow: auto;
 }
-body.-modaled.-modaled-olds .-modaled-stage .-modaled-image {
+body.-modaled.-modaled-olds .-modaled-image {
   max-width: 100%;
   max-height: 100%;
 }
@@ -188,7 +206,7 @@ body.-modaled.-modaled-olds .-modaled-stage .-modaled-image {
   -webkit-box-shadow: 0 3px 30px 40px rgba(0, 0, 0, 0.1);
   box-shadow: 0 1px 7px rgba(0, 0, 0, 0.15);
 }
-.modal-container .modal-header {
+.modal-container .my-header {
   position: relative;
   padding: 10px 50px 10px 10px;
   background: #F1F0F0;
@@ -196,7 +214,7 @@ body.-modaled.-modaled-olds .-modaled-stage .-modaled-image {
   border-radius: 2px 2px 0 0;
   box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.1);
 }
-.modal-container .modal-header h3 {
+.modal-container .my-header h3 {
   display: inline-block;
   margin: 0;
   padding: 0;
@@ -205,7 +223,7 @@ body.-modaled.-modaled-olds .-modaled-stage .-modaled-image {
   color: #666;
   line-height: 1.1;
 }
-.modal-container .modal-header .hide {
+.modal-container .my-header .hide {
   display: inline-block;
   position: absolute;
   top: 10px;
@@ -214,10 +232,10 @@ body.-modaled.-modaled-olds .-modaled-stage .-modaled-image {
   color: #ccc;
   text-decoration: none;
 }
-.modal-container .modal-header .hide:hover {
+.modal-container .my-header .hide:hover {
   color: #999;
 }
-.modal-container .modal-footer {
+.modal-container .my-footer {
   position: relative;
   padding: 8px 10px;
   background: #F1F0F0;
@@ -225,8 +243,93 @@ body.-modaled.-modaled-olds .-modaled-stage .-modaled-image {
   text-align: right;
   border-radius: 0 0 2px 2px;
 }
-.modal-container .modal-content {
+.modal-container .header > a {
+  display: block;
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  font-size: 16px;
+  font-weight: normal;
+  color: #fff;
+  text-decoration: none;
+  text-align: center;
+  line-height: 25px;
+  background: #000;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.modal-container .content {
   max-width: 100%;
   padding: 15px;
   overflow: auto;
+}
+.modal-container .content.image-only {
+  padding: 0;
+}
+.my-modal {
+  font-family: Arial, 'ヒラギノ角ゴ Pro W3', 'Hiragino Kaku Gothic Pro', Osaka, 'メイリオ', Meiryo, 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif;
+  background: #fff;
+  border-radius: 3px;
+  -webkit-box-shadow: 0 3px 30px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 7px rgba(0, 0, 0, 0.15);
+}
+.my-modal .my-header {
+  position: relative;
+  padding: 10px 50px 10px 10px;
+  background: #F1F0F0;
+  border-radius: 3px 3px 0 0;
+  box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.15);
+}
+.my-modal .my-header h3 {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.1;
+}
+.my-modal .my-header a {
+  display: block;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 16px;
+  font-weight: normal;
+  color: #fff;
+  text-decoration: none;
+  text-align: center;
+  line-height: 21px;
+  background: #000;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.my-modal .my-footer {
+  position: relative;
+  padding: 8px 10px;
+  background: #F1F0F0;
+  overflow: hidden;
+  text-align: right;
+  border-radius: 0 0 3px 3px;
+}
+.my-modal .my-footer a {
+  display: inline-block;
+  padding: 5px 12px;
+  color: #1D9D73;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+.my-modal .my-footer a:hover {
+  background: #f9f9f9;
+}
+.my-modal .my-content {
+  max-width: 100%;
+  padding: 15px;
+  font-size: 15px;
+  line-height: 1.4;
 }
