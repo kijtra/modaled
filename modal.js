@@ -461,7 +461,7 @@
 			if (!self.data(pluginName)) {
 				// 対象がインライン要素の場合
 				id = option.target || self.attr('href');
-				if ('#' === id[0] || '.' === id[0]) {
+				if (id && ('#' === id[0] || '.' === id[0])) {
 					modal = $(id);
 					if (!modal.length) {
 						return true;
