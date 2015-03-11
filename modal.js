@@ -18,7 +18,7 @@
 		footerClass: 'footer',
 		contentClass: 'content',
 		hideButtonClass: '.hide',
-		overlayClose: false,
+		overlayHideDisable: false,
 		overlayOpacity: 0.2,
 		autoHide: 0,
 		preload: false,
@@ -28,7 +28,7 @@
 		acChangeShow: 'flipInY',
 		acSpinShow: 'zoomIn',
 		acSpinHide: 'zoomOut',
-		acDisableClose: 'wobble',
+		acOverlayHideDisable: 'wobble',
 		beforeShow: null,
 		afterShow: null,
 		beforeClose: null,
@@ -86,13 +86,13 @@
 					event.preventDefault();
 					if ($current && !isAnimating && !isCssAnimating) {
 						var option = $current.data('option');
-						if (option.overlayClose) {
+						if (option.overlayHideDisable) {
 							$body.addClass(prefix + '-stop');
 							if (animationListener) {
 								$stage.get(0)[pluginName] = function() {
 									$body.removeClass(prefix + '-stop');
 								};
-								$stage.addClass(option.acDisableClose);
+								$stage.addClass(option.acOverlayHideDisable);
 							} else {
 								isAnimating = true;
 								$stage.stop().fadeTo('fast', 0.1, function() {
@@ -415,11 +415,16 @@
 				if (xhr[url]) {
 					xhr[url].success(success);
 				} else {
-					if (method && 'post' === method) {
-						xhr[url] = $.post(url + '?' + (new Date()).getTime(), data, success);
-					} else {
-						xhr[url] = $.get(url + '?' + (new Date()).getTime(), success);
-					}
+					xhr[url] = $.ajax({
+						url: url + '?' + (new Date()).getTime(),
+						type: (!method ? 'get' : method),
+						success: success,
+						error: function(res) {
+							xhr[url] = null;
+							$[pluginName]('<strong style="color:red">' + res.status + ' ' + res.statusText + '</strong>');
+							$spinner.trigger('hide');
+						}
+					});
 				}
 			}
 
