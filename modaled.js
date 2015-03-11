@@ -17,7 +17,6 @@
 		headerClass: '',
 		footerClass: '',
 		contentClass: '',
-		hideButtonClass: '.hide',
 		overlayHideDisable: false,
 		overlayOpacity: 0.2,
 		autoHide: 0,
@@ -506,7 +505,7 @@
 		}
 	};
 
-	$[pluginName].settings = function (option, value) {
+	$[pluginName].defaults = function (option, value) {
 		if ('object' === typeof option) {
 			defaults = $.extend(defaults, option);
 		} else if ('string' === typeof option && undefined !== value) {
